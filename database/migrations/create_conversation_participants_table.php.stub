@@ -1,0 +1,38 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->foreignKey($table, 'conversation_id', 'conversations');
+            $this->userKey($table, 'user_id');
+
+            // All per-user conversation state lives here; nothing on this
+            // row is ever visible to the other participant.
+            $table->timestamp('last_read_at')->nullable();
+            $table->timestamp('archived_at')->nullable();
+            $table->timestamp('pinned_at')->nullable();
+            $table->timestamp('muted_until')->nullable();
+            $table->timestamp('conversation_cleared_at')->nullable();
+            $table->json('labels')->nullable();
+
+            $table->timestamps();
+
+            $table->unique(['conversation_id', 'user_id']);
+            $table->index(['user_id', 'archived_at']);
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('conversation_participants');
+    }
+};

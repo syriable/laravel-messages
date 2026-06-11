@@ -1,0 +1,32 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->foreignKey($table, 'message_id', 'messages');
+            $this->userKey($table, 'user_id');
+
+            $table->timestamp('read_at')->nullable();
+            $table->timestamp('starred_at')->nullable();
+            $table->timestamp('deleted_at')->nullable();
+            $table->timestamps();
+
+            $table->unique(['message_id', 'user_id']);
+            $table->index(['user_id', 'starred_at']);
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('message_statuses');
+    }
+};

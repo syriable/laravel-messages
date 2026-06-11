@@ -1,0 +1,31 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->userKey($table, 'user_id');
+            $this->userKey($table, 'spammer_id', nullable: true)->index();
+            $this->foreignKey($table, 'conversation_id', 'conversations', nullable: true);
+            $this->foreignKey($table, 'message_id', 'messages', nullable: true);
+
+            $table->string('reason')->nullable();
+            $table->timestamps();
+
+            $table->index(['user_id', 'spammer_id']);
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('spam_entries');
+    }
+};
