@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->userKey($table, 'reporter_id')->index();
+
+            // Morph columns stay string-based so a report can target a
+            // message, a conversation or any user model key type.
+            $table->string('reportable_type');
+            $table->string('reportable_id', 191);
+
+            $table->string('reason');
+            $table->text('description')->nullable();
+            $table->string('status', 32)->default('pending')->index();
+            $table->timestamp('resolved_at')->nullable();
+            $table->timestamps();
+
+            $table->index(['reportable_type', 'reportable_id']);
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('message_reports');
+    }
+};

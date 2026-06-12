@@ -2,9 +2,28 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
-    level: 5
+    level: max
     paths:
         - src
         - config
         - database
     tmpDir: build/phpstan
+    ignoreErrors:
+        # This file IS a config file: it is published to the host app's
+        # config directory, where env() calls are the convention.
+        -
+            identifier: larastan.noEnvCallsOutsideOfConfig
+            path: config/laravel-messages.php
+        # Public package API: consumed by host applications, not by src/.
+        -
+            identifier: trait.unused
+            path: src/Concerns/HasMessaging.php
+        # Participant search columns are developer-defined config values and
+        # can never be literal strings; the identifier is wrapped via the
+        # query grammar and the search term is always a binding. Unmatched on
+        # Laravel 12, where the stub does not yet require literal-string.
+        -
+            message: '#\$sql of method .*orWhereRaw\(\) expects literal-string#'
+            path: src/Services/DatabaseMessageSearch.php
+            count: 1
+            reportUnmatched: false

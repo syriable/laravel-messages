@@ -1,0 +1,33 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->foreignKey($table, 'message_id', 'messages');
+
+            $table->string('disk', 64);
+            $table->string('path', 1024);
+            $table->string('filename');
+            $table->string('mime_type', 128);
+            $table->string('extension', 16);
+            $table->unsignedBigInteger('size');
+            $table->json('metadata')->nullable();
+            $table->timestamp('expires_at')->nullable()->index();
+            $table->timestamps();
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('message_attachments');
+    }
+};

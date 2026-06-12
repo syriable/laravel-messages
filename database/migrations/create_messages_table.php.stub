@@ -1,0 +1,36 @@
+<?php
+
+declare(strict_types=1);
+
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+use Syriable\LaravelMessages\Support\MessagesMigration;
+
+return new class extends MessagesMigration
+{
+    public function up(): void
+    {
+        Schema::create($this->table(), function (Blueprint $table) {
+            $this->primaryKey($table);
+            $this->foreignKey($table, 'conversation_id', 'conversations');
+            $this->userKey($table, 'sender_id')->index();
+
+            $table->text('body')->nullable();
+            $table->string('type', 32)->default('text');
+
+            $this->foreignKey($table, 'forwarded_from_id', 'messages', nullable: true, cascadeOnDelete: false);
+
+            $table->timestamp('edited_at')->nullable();
+            $table->json('metadata')->nullable();
+            $table->timestamps();
+            $table->softDeletes();
+
+            $table->index(['conversation_id', 'created_at']);
+        });
+    }
+
+    protected function table(): string
+    {
+        return $this->tableName('messages');
+    }
+};
