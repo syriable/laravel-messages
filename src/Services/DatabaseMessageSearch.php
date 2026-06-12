@@ -42,8 +42,12 @@ class DatabaseMessageSearch implements SearchesMessages
                 ->orWhereHas('messages', fn ($q) => $q->whereRaw("body like ? escape '!'", [$like]))
                 ->orWhereHas('participants.user', function ($q) use ($participantColumns, $like) {
                     $q->where(function ($q) use ($participantColumns, $like) {
+                        $grammar = $q->getQuery()->getGrammar();
+
                         foreach ($participantColumns as $column) {
-                            $q->orWhereRaw("{$column} like ? escape '!'", [$like]);
+                            // The identifier comes from package config and is
+                            // wrapped by the grammar; the term is always bound.
+                            $q->orWhereRaw($grammar->wrap($column)." like ? escape '!'", [$like]);
                         }
                     });
                 }))
